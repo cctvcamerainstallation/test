@@ -67,15 +67,29 @@
 </head>
 
 <body>
-  <div class="app" id="app">
-    <h1>Clikmasters Digital Marketing Agency</h1>
-    <div class="progress" id="progress"></div>
-    <div class="timer" id="timer"></div>
-    <div class="question" id="question"></div>
-    <div id="options"></div>
-  </div>
+<div class="app" id="app">
+  <h1>Clikmasters Digital Marketing Agency</h1>
+  <div class="progress" id="progress"></div>
+  <div class="timer" id="timer"></div>
+  <div class="question" id="question"></div>
+  <div id="options"></div>
+</div>
 
 <script>
+/* ================= SOUNDS (ONLINE LINKS) ================= */
+
+const correctSound = new Audio(
+  "https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"
+);
+const wrongSound = new Audio(
+  "https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"
+);
+
+correctSound.preload = "auto";
+wrongSound.preload = "auto";
+
+/* ================= QUESTIONS ================= */
+
 const questions = [
   { q: "Ek service page traffic la raha hai lekin conversions zero hain. Sab se logical SEO action kya hoga?",
     options: ["CTA improve karna", "SERP intent analyze karke content align karna", "More backlinks build karna"], answer: 1 },
@@ -138,17 +152,41 @@ const questions = [
     options: ["Tool usage", "Algorithm memorization", "SERP-driven decision making & testing mindset"], answer: 2 }
 ];
 
+/* ================= STATE ================= */
+
 let current = 0;
 let score = 0;
 let timeLeft = 20;
 let timer = null;
 let locked = false;
+let selections = [];
+
+/* ================= ELEMENTS ================= */
 
 const qEl = document.getElementById("question");
 const optEl = document.getElementById("options");
 const timerEl = document.getElementById("timer");
 const progressEl = document.getElementById("progress");
 const app = document.getElementById("app");
+
+/* ================= HELPERS ================= */
+
+function shuffleQuestion(question) {
+  const opts = question.options.map((text, i) => ({
+    text,
+    correct: i === question.answer
+  }));
+
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+
+  question.options = opts.map(o => o.text);
+  question.answer = opts.findIndex(o => o.correct);
+}
+
+/* ================= CORE LOGIC ================= */
 
 function loadQuestion() {
   clearInterval(timer);
@@ -159,6 +197,8 @@ function loadQuestion() {
   timerEl.textContent = `Time left: ${timeLeft}s`;
 
   const q = questions[current];
+  shuffleQuestion(q);
+
   qEl.textContent = q.q;
   optEl.innerHTML = "";
 
@@ -185,12 +225,21 @@ function selectOption(i, el) {
   locked = true;
   clearInterval(timer);
 
-  if (i === questions[current].answer) score++;
+  selections.push(i);
+
+  if (i === questions[current].answer) {
+    score++;
+    correctSound.currentTime = 0;
+    correctSound.play();
+  } else {
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+  }
 
   document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
   el.classList.add("selected");
 
-  setTimeout(nextQuestion, 300);
+  setTimeout(nextQuestion, 500);
 }
 
 function nextQuestion() {
@@ -204,7 +253,13 @@ function nextQuestion() {
 
 function showResult() {
   const percentage = Math.round((score / questions.length) * 100);
-  const status = percentage >= 70 ? "PASS" : "FAIL";
+
+  const counts = {};
+  selections.forEach(s => counts[s] = (counts[s] || 0) + 1);
+  const maxRepeat = Math.max(...Object.values(counts));
+
+  let status = percentage >= 70 ? "PASS" : "FAIL";
+  if (maxRepeat / selections.length > 0.7) status = "FAIL";
 
   app.innerHTML = `
     <div class="result">
@@ -215,6 +270,8 @@ function showResult() {
     </div>
   `;
 }
+
+/* ================= INIT ================= */
 
 loadQuestion();
 </script>
