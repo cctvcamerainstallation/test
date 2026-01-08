@@ -1,94 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SEO Test Page | Clikmasters</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SEO knowledge test page by Clikmasters Digital Marketing Agency. Test your SEO understanding and skills.">
+  <meta charset="UTF-8" />
+  <title>Clikmasters Digital Marketing Agency – SEO Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
-      background: #020617;
+      background: #0f172a;
       color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
       margin: 0;
     }
-    header {
-      padding: 20px;
-      border-bottom: 1px solid #1e293b;
+    .app {
+      width: 100%;
+      max-width: 760px;
+      background: #020617;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.45);
     }
-    nav a {
+    h1 {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    .progress {
+      font-size: 13px;
       color: #94a3b8;
-      margin-right: 16px;
-      text-decoration: none;
+      margin-bottom: 8px;
     }
-    nav a:hover {
+    .timer {
+      font-size: 14px;
       color: #38bdf8;
+      margin-bottom: 16px;
     }
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 20px;
+    .question {
+      font-size: 18px;
+      margin-bottom: 18px;
     }
-    .box {
+    .option {
       background: #020617;
       border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 24px;
-      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all .2s ease;
     }
-    footer {
+    .option:hover {
+      border-color: #38bdf8;
+    }
+    .option.selected {
+      background: #1e293b;
+      border-color: #38bdf8;
+    }
+    .result {
       text-align: center;
-      padding: 20px;
-      border-top: 1px solid #1e293b;
-      margin-top: 60px;
-      font-size: 13px;
-      color: #64748b;
     }
+    .pass { color: #22c55e; }
+    .fail { color: #ef4444; }
   </style>
 </head>
 
 <body>
-
-<header>
-  <h1>Clikmasters SEO Test</h1>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-  </nav>
-</header>
-
-<main class="container">
-
-  <div class="box">
-    <h2>Welcome to the SEO Test</h2>
-    <p>
-      This page is designed to evaluate practical SEO knowledge, understanding of search intent,
-      and modern ranking principles.
-    </p>
-    <p>
-      Candidates are expected to demonstrate real-world SEO thinking rather than textbook answers.
-    </p>
-  </div>
-
-  <div class="box">
-    <h2>Instructions</h2>
-    <ul>
-      <li>Answer all questions honestly</li>
-      <li>Focus on logic, not memorization</li>
-      <li>Think like a search engine</li>
-    </ul>
-  </div>
-
-</main>
-
-<footer>
-  © <span id="year"></span> Clikmasters Digital Marketing Agency
-</footer>
+<div class="app" id="app">
+  <h1>Clikmasters Digital Marketing Agency</h1>
+  <div class="progress" id="progress"></div>
+  <div class="timer" id="timer"></div>
+  <div class="question" id="question"></div>
+  <div id="options"></div>
+</div>
 
 <script>
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>
+/* ================= SOUNDS (ONLINE LINKS) ================= */
 
+const correctSound = new Audio(
+  "https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"
+);
+const wrongSound = new Audio(
+  "https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"
+);
+
+correctSound.preload = "auto";
+wrongSound.preload = "auto";
+
+/* ================= QUESTIONS ================= */
+
+const questions = [
+  { q: "Ek service page traffic la raha hai lekin conversions zero hain. Sab se logical SEO action kya hoga?",
+    options: ["CTA improve karna", "SERP intent analyze karke content align karna", "More backlinks build karna"], answer: 1 },
+
+  { q: "Kaunsa backlink Google ke liye sab se zyada natural lagta hai?",
+    options: ["Exact-match anchor guest post", "Branded anchor editorial mention", "Footer sitewide link"], answer: 1 },
+
+  { q: "Agar sitemap correct hai lekin pages index nahi ho rahe, first check kya hoga?",
+    options: ["Robots meta tags & noindex issues", "Image optimization", "Social signals"], answer: 0 },
+
+  { q: "Non-YMYL blog ke liye EEAT ka sab se practical signal kya hota hai?",
+    options: ["Author bio with topical experience", "HTTPS certificate", "Keyword density"], answer: 0 },
+
+  { q: "Agar content keyword-targeted hai lekin entities missing hain, impact kya hoga?",
+    options: ["Ranking unstable rahegi", "Crawl issue", "Manual action"], answer: 0 },
+
+  { q: "Local business ke liye sab se pehla off-page trust factor kya hota hai?",
+    options: ["High DA backlinks", "Google reviews consistency", "Blog comments"], answer: 1 },
+
+  { q: "Page speed slow hai lekin Core Web Vitals pass ho rahe hain. Ranking impact?",
+    options: ["Major negative impact", "Minor / negligible impact", "Manual penalty"], answer: 1 },
+
+  { q: "Agar multiple pages same keyword target kar rahe hain, sab se safe fix kya hai?",
+    options: ["Keyword stuffing reduce karna", "Content consolidation + internal linking", "New backlinks"], answer: 1 },
+
+  { q: "Topical authority ka matlab kya hai?",
+    options: ["Zyada backlinks", "Ek topic ke andar comprehensive coverage", "Homepage optimization"], answer: 1 },
+
+  { q: "Core update ke baad site drop hui, lekin sirf kuch URLs affect hue. Iska matlab?",
+    options: ["Sitewide penalty", "Page-level quality reassessment", "Technical issue"], answer: 1 },
+
+  { q: "Google NLP ke context mein entity salience ka matlab kya hai?",
+    options: ["Keyword prominence", "Entity ki contextual importance within content", "Anchor text ratio"], answer: 1 },
+
+  { q: "Kaunsa backlink profile sab se zyada safe hota hai?",
+    options: ["Mostly exact-match anchors", "Brand + URL + mixed anchors with relevance", "High DA PBN links"], answer: 1 },
+
+  { q: "Large site ke liye crawl budget optimize karne ka best step?",
+    options: ["JS minification", "Low-value URLs ko noindex / block karna", "Homepage speed improve karna"], answer: 1 },
+
+  { q: "Agar SERP comparison pages se bhara ho aur aap guide publish karo, result?",
+    options: ["Slow or no ranking due to intent mismatch", "Instant top-3", "Featured snippet"], answer: 0 },
+
+  { q: "Google trust signals ke liye strongest factor kya hai?",
+    options: ["About page length", "Real-world reputation + citations", "Keyword optimization"], answer: 1 },
+
+  { q: "Client-side rendered content ka best fix kya hai?",
+    options: ["Meta refresh", "Server-side rendering implement karna", "XML sitemap update"], answer: 1 },
+
+  { q: "Semantic internal linking ka primary purpose kya hota hai?",
+    options: ["PageRank flow", "Entity relationships clarify karna for Google", "Anchor optimization"], answer: 1 },
+
+  { q: "Competitor kam backlinks ke sath rank kar raha hai – kyun?",
+    options: ["Hidden PBN", "Strong topical authority & brand trust", "Google bug"], answer: 1 },
+
+  { q: "Helpful Content Update ke baad best recovery approach?",
+    options: ["Content pruning + intent refinement + EEAT boost", "New backlinks", "Keyword density change"], answer: 0 },
+
+  { q: "Best SEO professionals ko kaunsi cheez differentiate karti hai?",
+    options: ["Tool usage", "Algorithm memorization", "SERP-driven decision making & testing mindset"], answer: 2 }
+];
+
+/* ================= STATE ================= */
+
+let current = 0;
+let score = 0;
+let timeLeft = 20;
+let timer = null;
+let locked = false;
+let selections = [];
+
+/* ================= ELEMENTS ================= */
+
+const qEl = document.getElementById("question");
+const optEl = document.getElementById("options");
+const timerEl = document.getElementById("timer");
+const progressEl = document.getElementById("progress");
+const app = document.getElementById("app");
+
+/* ================= HELPERS ================= */
+
+function shuffleQuestion(question) {
+  const opts = question.options.map((text, i) => ({
+    text,
+    correct: i === question.answer
+  }));
+
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+
+  question.options = opts.map(o => o.text);
+  question.answer = opts.findIndex(o => o.correct);
+}
+
+/* ================= CORE LOGIC ================= */
+
+function loadQuestion() {
+  clearInterval(timer);
+  locked = false;
+  timeLeft = 20;
+
+  progressEl.textContent = `Question ${current + 1} of ${questions.length}`;
+  timerEl.textContent = `Time left: ${timeLeft}s`;
+
+  const q = questions[current];
+  shuffleQuestion(q);
+
+  qEl.textContent = q.q;
+  optEl.innerHTML = "";
+
+  q.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.textContent = opt;
+    div.onclick = () => selectOption(i, div);
+    optEl.appendChild(div);
+  });
+
+  timer = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = `Time left: ${timeLeft}s`;
+    if (timeLeft === 0) {
+      clearInterval(timer);
+      nextQuestion();
+    }
+  }, 1000);
+}
+
+function selectOption(i, el) {
+  if (locked) return;
+  locked = true;
+  clearInterval(timer);
+
+  selections.push(i);
+
+  if (i === questions[current].answer) {
+    score++;
+    correctSound.currentTime = 0;
+    correctSound.play();
+  } else {
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+  }
+
+  document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+
+  setTimeout(nextQuestion, 500);
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  const percentage = Math.round((score / questions.length) * 100);
+
+  const counts = {};
+  selections.forEach(s => counts[s] = (counts[s] || 0) + 1);
+  const maxRepeat = Math.max(...Object.values(counts));
+
+  let status = percentage >= 70 ? "PASS" : "FAIL";
+  if (maxRepeat / selections.length > 0.7) status = "FAIL";
+
+  app.innerHTML = `
+    <div class="result">
+      <h1>Test Completed</h1>
+      <p><strong>Score:</strong> ${score} / ${questions.length}</p>
+      <p><strong>Percentage:</strong> ${percentage}%</p>
+      <h2 class="${status === 'PASS' ? 'pass' : 'fail'}">${status}</h2>
+    </div>
+  `;
+}
+
+/* ================= INIT ================= */
+
+loadQuestion();
+</script>
 </body>
 </html>
